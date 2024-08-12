@@ -3,25 +3,23 @@ package com.romarickc.reminder.presentation.tile
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.wear.tiles.ActionBuilders
-import androidx.wear.tiles.ColorBuilders.argb
-import androidx.wear.tiles.DeviceParametersBuilders.DeviceParameters
-import androidx.wear.tiles.DimensionBuilders
-import androidx.wear.tiles.LayoutElementBuilders.*
-import androidx.wear.tiles.ModifiersBuilders
-import androidx.wear.tiles.ModifiersBuilders.Clickable
-import androidx.wear.tiles.RequestBuilders.ResourcesRequest
-import androidx.wear.tiles.RequestBuilders.TileRequest
-import androidx.wear.tiles.ResourceBuilders.Resources
-import androidx.wear.tiles.TileBuilders.Tile
-import androidx.wear.tiles.TimelineBuilders.Timeline
-import androidx.wear.tiles.TimelineBuilders.TimelineEntry
-import androidx.wear.tiles.material.CircularProgressIndicator
-import androidx.wear.tiles.material.ProgressIndicatorColors
-import androidx.wear.tiles.material.Text
-import androidx.wear.tiles.material.Typography
-import androidx.wear.tiles.material.layouts.EdgeContentLayout
-import com.google.android.horologist.tiles.CoroutinesTileService
+import androidx.wear.protolayout.ActionBuilders
+import androidx.wear.protolayout.ColorBuilders.argb
+import androidx.wear.protolayout.DeviceParametersBuilders
+import androidx.wear.protolayout.DimensionBuilders
+import androidx.wear.protolayout.LayoutElementBuilders
+import androidx.wear.protolayout.ModifiersBuilders
+import androidx.wear.protolayout.ResourceBuilders
+import androidx.wear.protolayout.TimelineBuilders
+import androidx.wear.protolayout.ModifiersBuilders.Clickable
+import androidx.wear.protolayout.material.CircularProgressIndicator
+import androidx.wear.protolayout.material.ProgressIndicatorColors
+import androidx.wear.protolayout.material.Text
+import androidx.wear.protolayout.material.layouts.EdgeContentLayout
+import androidx.wear.tiles.RequestBuilders
+import androidx.wear.tiles.TileBuilders
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
+import com.google.android.horologist.tiles.SuspendingTileService
 import com.romarickc.reminder.domain.repository.WaterIntakeRepository
 import com.romarickc.reminder.presentation.MainActivity
 import com.romarickc.reminder.presentation.utils.Constants
@@ -31,33 +29,36 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.time.ZonedDateTime
 import javax.inject.Inject
+import androidx.wear.protolayout.material.Typography
+import com.romarickc.reminder.presentation.theme.SeafoamGreen
 
 private const val RESOURCES_VERSION = "0"
 
+@OptIn(ExperimentalHorologistApi::class)
 @AndroidEntryPoint
-class WaterReminderTile : CoroutinesTileService() {
+class WaterReminderTile : SuspendingTileService() {
     @Inject
     lateinit var repository: WaterIntakeRepository
 
     override suspend fun resourcesRequest(
-        requestParams: ResourcesRequest
-    ): Resources {
-        return Resources.Builder()
+        requestParams: RequestBuilders.ResourcesRequest
+    ): ResourceBuilders.Resources {
+        return ResourceBuilders.Resources.Builder()
             .setVersion(RESOURCES_VERSION)
             .build()
     }
 
     override suspend fun tileRequest(
-        requestParams: TileRequest
-    ): Tile {
-        val singleTileTimeline = Timeline.Builder()
+        requestParams: RequestBuilders.TileRequest
+    ): TileBuilders.Tile {
+        val singleTileTimeline = TimelineBuilders.Timeline.Builder()
             .addTimelineEntry(
-                TimelineEntry.Builder()
+                TimelineBuilders.TimelineEntry.Builder()
                     .setLayout(
-                        Layout.Builder()
+                        LayoutElementBuilders.Layout.Builder()
                             .setRoot(
                                 tileLayout(
-                                    requestParams.deviceParameters!!
+                                    requestParams.deviceConfiguration
                                 )
                             )
                             .build()
@@ -66,16 +67,16 @@ class WaterReminderTile : CoroutinesTileService() {
             )
             .build()
 
-        return Tile.Builder()
+        return TileBuilders.Tile.Builder()
             .setResourcesVersion(RESOURCES_VERSION)
-            .setTimeline(singleTileTimeline)
+            .setTileTimeline(singleTileTimeline)
             .setFreshnessIntervalMillis(Constants.REFRESH_INTERVAL_TILE)
             .build()
     }
 
     private suspend fun tileLayout(
-        deviceParameters: DeviceParameters,
-    ): LayoutElement {
+        deviceParameters: DeviceParametersBuilders.DeviceParameters,
+    ): LayoutElementBuilders.LayoutElement {
 
         val now: ZonedDateTime = ZonedDateTime.now()
         val startOfDay: ZonedDateTime = now.toLocalDate().atStartOfDay(now.zone)
@@ -91,7 +92,7 @@ class WaterReminderTile : CoroutinesTileService() {
 
         // Log.i("tile out", "currentIntake $currentIntake targetVal $targetVal")
 
-        return Column.Builder()
+        return LayoutElementBuilders.Column.Builder()
             .setWidth(DimensionBuilders.expand())
             .setHeight(DimensionBuilders.expand())
             .setModifiers(
@@ -125,8 +126,8 @@ class WaterReminderTile : CoroutinesTileService() {
     private fun layout2(
         currentIntake: Int,
         targetVal: Int,
-        deviceParameters: DeviceParameters,
-    ) = EdgeContentLayout.Builder(deviceParameters)
+        deviceParameters: DeviceParametersBuilders.DeviceParameters,
+    ) = EdgeContentLayout.Builder(deviceParameters).setResponsiveContentInsetEnabled(true)
         .setEdgeContent(
             CircularProgressIndicator.Builder()
                 .setProgress(currentIntake.toFloat() / targetVal.toFloat())
@@ -136,7 +137,7 @@ class WaterReminderTile : CoroutinesTileService() {
         .setPrimaryLabelTextContent(
             Text.Builder(baseContext, "Intake")
                 .setTypography(Typography.TYPOGRAPHY_CAPTION1)
-                .setColor(argb(android.graphics.Color.parseColor("#AECBFA")))
+                .setColor(argb(SeafoamGreen.toArgb()))
                 .build()
         )
         .setSecondaryLabelTextContent(
@@ -154,6 +155,6 @@ class WaterReminderTile : CoroutinesTileService() {
 }
 
 private fun colorThing() = ProgressIndicatorColors(
-    argb(android.graphics.Color.parseColor("#AECBFA")),
+    argb(SeafoamGreen.toArgb()),
     argb(Color(1f, 1f, 1f, 0.1f).toArgb())
 )

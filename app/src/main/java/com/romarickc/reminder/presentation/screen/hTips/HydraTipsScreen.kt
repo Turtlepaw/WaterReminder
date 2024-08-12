@@ -1,29 +1,21 @@
 package com.romarickc.reminder.presentation.screen.hTips
 
-import android.util.Log
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.TipsAndUpdates
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.material.*
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.romarickc.reminder.presentation.theme.ReminderTheme
+import com.romarickc.reminder.presentation.utils.Page
 import com.romarickc.reminder.presentation.utils.UiEvent
-import kotlinx.coroutines.launch
 
 @Composable
 fun HydrationTipsScreen(
@@ -56,59 +48,27 @@ fun HydrationTipsScreen(
     HydrationTipsContent(tipsList)
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalHorologistApi::class)
 @Composable
 fun HydrationTipsContent(
     tipsList: List<Tip>
 ) {
-    val scalingLazyListState: ScalingLazyListState = rememberScalingLazyListState()
-
-    Scaffold(
-        timeText = { TimeText() },
-        vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
-        positionIndicator = { PositionIndicator(scalingLazyListState = scalingLazyListState) }
-    ) {
-        val coroutineScope = rememberCoroutineScope()
-        val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(Unit){focusRequester.requestFocus()}
-
-        ScalingLazyColumn(
-            modifier = Modifier
-                .onRotaryScrollEvent {
-                    coroutineScope.launch {
-                        scalingLazyListState.scrollBy(it.verticalScrollPixels)
-                        scalingLazyListState.animateScrollBy(0f)
-                    }
-                    true
-                }
-                .focusRequester(focusRequester)
-                .focusable()
-                .fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = 21.dp,
-                start = 10.dp,
-                end = 10.dp,
-                bottom = 10.dp
-            ),
-            state = scalingLazyListState,
-            verticalArrangement = Arrangement.Center,
-        ) {
+    Page {
             items(tipsList.size) { index ->
                 SimpleCard(
-                    "tip",
-                    "${index+1}",
+                    "Tip",
+                    "",
                     title = tipsList[index].title,
                     content = tipsList[index].description
                 )
             }
         }
-    }
 }
 
 data class Tip(val title: String, val description: String)
 
 @Composable
-fun SimpleCard(theapp: String, time: String, title: String, content: String) {
+fun SimpleCard(name: String, time: String = "", title: String, content: String) {
     AppCard(
         appImage = {
             Icon(
@@ -117,11 +77,12 @@ fun SimpleCard(theapp: String, time: String, title: String, content: String) {
                 modifier = Modifier.requiredSize(15.dp)
             )
         },
-        appName = { Text(theapp, color = MaterialTheme.colors.primary) },
+        appName = { Text(name, color = MaterialTheme.colors.primary) },
         time = { Text(time, color = MaterialTheme.colors.secondary) },
         title = { Text(title, color = MaterialTheme.colors.onSurface) },
         modifier = Modifier.padding(2.dp),
         onClick = {},
+        enabled = false
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(text = content)

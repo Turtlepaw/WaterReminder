@@ -1,5 +1,6 @@
 package com.romarickc.reminder.presentation.screen.rIntake
 
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Spring.DampingRatioLowBouncy
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.LocalDrink
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +47,7 @@ fun RegisterIntakeScreen(
                 is UiEvent.PopBackStack -> {
                     onPopBackStack(event)
                 }
+
                 else -> Unit
             }
         }
@@ -66,7 +69,8 @@ fun RegisterIntakeContent(
         } else {
             currentVal.toFloat() / intakeTarget.toFloat()
         },
-        animationSpec = spring(DampingRatioLowBouncy), label = ""
+        animationSpec = spring(DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
+        label = ""
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -79,7 +83,7 @@ fun RegisterIntakeContent(
             valueProgression = 1..Constants.MAX_INTAKE,
             increaseIcon = {
                 Icon(
-                    imageVector = Icons.Rounded.LocalDrink,
+                    imageVector = Icons.Rounded.Add,
                     contentDescription = "increase bottle count",
                     modifier = Modifier.requiredSize(25.dp)
                 )
@@ -93,7 +97,8 @@ fun RegisterIntakeContent(
                     Icon(
                         imageVector = Icons.Rounded.LocalDrink,
                         contentDescription = "triggers meditation action",
-                        modifier = Modifier.requiredSize(31.dp)
+                        modifier = Modifier.requiredSize(31.dp),
+                        tint = MaterialTheme.colors.primary
                     )
                 },
                 colors = ChipDefaults.chipColors(
@@ -104,12 +109,12 @@ fun RegisterIntakeContent(
                         text = "$currentVal",
                         style = TextStyle(
                             fontSize = 31.sp,
-                            color = MyBlue,
+                            color = MaterialTheme.colors.primary,
                             fontWeight = FontWeight.Bold
                         )
                     )
                 },
-                onClick = { }
+                onClick = { },
             )
         }
 
@@ -118,8 +123,7 @@ fun RegisterIntakeContent(
                 .fillMaxSize()
                 .padding(3.dp),
             progress = waterAnimation.value,
-            trackColor = MyBlue2,
-            indicatorColor = MyBlue
+            indicatorColor = MaterialTheme.colors.primary
         )
     }
 }

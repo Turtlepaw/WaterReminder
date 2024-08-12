@@ -38,7 +38,9 @@ import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.Vignette
 import androidx.wear.compose.material.VignettePosition
 import androidx.wear.compose.material.rememberScalingLazyListState
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.romarickc.reminder.presentation.theme.ReminderTheme
+import com.romarickc.reminder.presentation.utils.Page
 import com.romarickc.reminder.presentation.utils.UiEvent
 import kotlinx.coroutines.launch
 
@@ -62,99 +64,71 @@ fun ImportExportScreen(
     ImportExportContent(onEvent = viewModel::onEvent)
 }
 
-
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalHorologistApi::class)
 @Composable
 fun ImportExportContent(
     onEvent: (ImportExportEvents) -> Unit
 ) {
-    val scalingLazyListState: ScalingLazyListState = rememberScalingLazyListState()
-    Scaffold(
-        timeText = { TimeText() },
-        vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
-        positionIndicator = { PositionIndicator(scalingLazyListState = scalingLazyListState) },
-    ) {
-        val coroutineScope = rememberCoroutineScope()
-        val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(Unit){focusRequester.requestFocus()}
-
-        ScalingLazyColumn(
-            modifier = Modifier
-                .onRotaryScrollEvent {
-                    coroutineScope.launch {
-                        scalingLazyListState.scrollBy(it.verticalScrollPixels)
-                        scalingLazyListState.animateScrollBy(0f)
-                    }
-                    true
-                }
-                .focusRequester(focusRequester)
-                .focusable()
-                .fillMaxSize(),
-            state = scalingLazyListState,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            // title
-            item {
-                ListHeader {
-                    Text(text = "Import/Export data")
-                }
+    Page {
+        // title
+        item {
+            ListHeader {
+                Text(text = "Import/Export data")
             }
+        }
 
-            // import/export
-            items(2) { index ->
-                Chip(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    icon = {
-                        when (index) {
+        // import/export
+        items(2) { index ->
+            Chip(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                icon = {
+                    when (index) {
 
-                            0 -> Icon(
-                                imageVector = Icons.Rounded.CloudDownload,
-                                contentDescription = "triggers Import action",
-                                modifier = Modifier
-                            )
+                        0 -> Icon(
+                            imageVector = Icons.Rounded.CloudDownload,
+                            contentDescription = "triggers Import action",
+                            modifier = Modifier
+                        )
 
-                            1 -> Icon(
-                                imageVector = Icons.Rounded.CloudUpload,
-                                contentDescription = "triggers Export action",
-                                modifier = Modifier
+                        1 -> Icon(
+                            imageVector = Icons.Rounded.CloudUpload,
+                            contentDescription = "triggers Export action",
+                            modifier = Modifier
+                        )
+                    }
+                },
+                label = {
+                    when (index) {
+                        0 -> {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colors.onPrimary,
+                                text = "Import data"
                             )
                         }
-                    },
-                    label = {
-                        when (index) {
-                            0 -> {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = MaterialTheme.colors.onPrimary,
-                                    text = "Import data"
-                                )
-                            }
 
-                            1 -> {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = MaterialTheme.colors.onPrimary,
-                                    text = "Export data"
-                                )
-                            }
-                        }
-                    },
-                    onClick = {
-                        when (index) {
-                            0 -> {
-                                onEvent(ImportExportEvents.OnImportclick(1))
-                            }
-
-                            1 -> {
-                                onEvent(ImportExportEvents.OnExportclick(1))
-                            }
+                        1 -> {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colors.onPrimary,
+                                text = "Export data"
+                            )
                         }
                     }
-                )
-            }
+                },
+                onClick = {
+                    when (index) {
+                        0 -> {
+                            onEvent(ImportExportEvents.OnImportclick(1))
+                        }
 
+                        1 -> {
+                            onEvent(ImportExportEvents.OnExportclick(1))
+                        }
+                    }
+                }
+            )
         }
     }
 }

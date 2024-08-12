@@ -1,35 +1,30 @@
 package com.romarickc.reminder.presentation.screen.notifSettings
 
 import android.util.Log
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.rotary.onRotaryScrollEvent
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.wear.compose.foundation.rotary.RotaryScrollableDefaults.snapBehavior
 import androidx.wear.compose.material.*
-import com.romarickc.reminder.presentation.theme.MyBlue
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
+import com.google.android.horologist.compose.rotaryinput.rememberRotaryHapticHandler
 import com.romarickc.reminder.presentation.theme.ReminderTheme
 import com.romarickc.reminder.presentation.utils.UiEvent
-import kotlinx.coroutines.launch
 
 @Composable
 fun NotifSettingsScreen(
@@ -54,7 +49,7 @@ fun NotifSettingsScreen(
     Log.i("notifPref", "$currentNotifPref")
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalHorologistApi::class)
 @Composable
 fun NotifSettingsContent(
     onEvent: (NotifSettingsEvents) -> Unit,
@@ -68,70 +63,56 @@ fun NotifSettingsContent(
         repeatItems = false
     )
 
-    Scaffold(
-        timeText = { TimeText() },
-        vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 12.dp)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val coroutineScope = rememberCoroutineScope()
-        val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(Unit){focusRequester.requestFocus()}
-
-        Column(
-            modifier = Modifier
-                .onRotaryScrollEvent {
-                    coroutineScope.launch {
-                        pickerState.scrollBy(it.verticalScrollPixels)
-                    }
-                    true
-                }
-                .focusRequester(focusRequester)
-                .focusable()
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Picker(
+            state = pickerState,
+            contentDescription = "Notification Setting",
+            modifier = Modifier.height(140.dp)
         ) {
-            // header
-            ListHeader {
-                Text(text = "Settings", Modifier.padding(top = 29.dp))
-            }
-
-            // preference picker
-            Picker(
-                modifier = Modifier
-                    .height(97.dp),
-                state = pickerState,
-                contentDescription = "sel notif pref",
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = (items[it]),
-                    style = TextStyle(
-                        fontSize = 23.sp,
-                        color = MyBlue,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-
-            // confirm
-            Button(
-                modifier = Modifier,
-                onClick = {
-                    onEvent(NotifSettingsEvents.OnValueChange(pickerState.selectedOption))
-                },
-                colors = ButtonDefaults.primaryButtonColors(
-                    backgroundColor = Color(0xFF2a2b2e),
-                )
-            ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = Icons.Rounded.ArrowForward,
-                    contentDescription = "triggers mod target action",
-                    tint = Color(0xFFf6f6f6)
+                    style = with(LocalDensity.current) {
+                        MaterialTheme.typography.display3.copy(
+                            fontWeight = FontWeight.Medium,
+                            // Ignore text scaling
+                            fontSize = MaterialTheme.typography.display3.fontSize.value.dp.toSp()
+                        )
+                    },
+                    color = MaterialTheme.colors.primary,
+                    // In case of overflow, minimize weird layout behavior
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2,
+                    modifier = Modifier.padding(vertical = 5.dp)
                 )
             }
         }
+        Button(
+            onClick = {
+                onEvent(NotifSettingsEvents.OnValueChange(pickerState.selectedOption))
+            },
+            colors = ButtonDefaults.secondaryButtonColors(),
+            modifier = Modifier
+                .size(ButtonDefaults.DefaultButtonSize)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Check,
+                tint = MaterialTheme.colors.primary,
+                contentDescription = "Settings",
+                modifier = Modifier
+                    .padding(2.dp)
+            )
+        }
     }
-
 }
 
 

@@ -39,7 +39,7 @@ class RegisterIntakeViewModel @Inject constructor(
             is RegisterIntakeEvents.OnDecreaseclick -> {
                 viewModelScope.launch {
                     repository.removeLastIntake()
-                    Toast.makeText(application, "Removed last", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(application, "Removed last", Toast.LENGTH_SHORT).show()
 
                 }
             }
@@ -48,7 +48,7 @@ class RegisterIntakeViewModel @Inject constructor(
             is RegisterIntakeEvents.OnIncreaseclick -> {
                 viewModelScope.launch {
                     repository.insertIntake()
-                    Toast.makeText(application, "Registered", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(application, "Registered", Toast.LENGTH_SHORT).show()
 
                     // update the worker to not send any notification that is like a minute away
                     // Toast.makeText(application, "$notifPref", Toast.LENGTH_SHORT).show()
