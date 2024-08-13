@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,8 +19,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.rotary.onRotaryScrollEvent
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +36,7 @@ import com.romarickc.reminder.presentation.theme.ReminderTheme
 import com.romarickc.reminder.presentation.utils.Constants
 import com.romarickc.reminder.presentation.utils.UiEvent
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun IntakeTargetScreen(
@@ -69,70 +75,54 @@ fun IntakeTargetContent(
         repeatItems = false
     )
 
-    Scaffold(
-        timeText = { TimeText() },
-        vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
-        modifier = Modifier.fillMaxSize(),
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 12.dp)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val coroutineScope = rememberCoroutineScope()
-        val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(Unit){focusRequester.requestFocus()}
-
-        Column(
-            modifier = Modifier
-                .onRotaryScrollEvent {
-                    coroutineScope.launch {
-                        pickerState.scrollBy(it.verticalScrollPixels)
-                    }
-                    true
-                }
-                .focusRequester(focusRequester)
-                .focusable()
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Picker(
+            state = pickerState,
+            contentDescription = "Notification Setting",
+            modifier = Modifier.height(140.dp)
         ) {
-            // header
-            ListHeader {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
-                    text = "Target",
-                    Modifier.padding(top = 17.dp),
-                    style = TextStyle(fontWeight = Bold, fontSize = 17.sp)
+                    text = String.format(Locale.getDefault(), "%,d", items[it]),
+                    style = with(LocalDensity.current) {
+                        MaterialTheme.typography.display3.copy(
+                            fontWeight = FontWeight.Medium,
+                            // Ignore text scaling
+                            fontSize = MaterialTheme.typography.display3.fontSize.value.dp.toSp()
+                        )
+                    },
+                    color = MaterialTheme.colors.primary,
+                    // In case of overflow, minimize weird layout behavior
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2,
+                    modifier = Modifier.padding(vertical = 5.dp)
                 )
             }
-            // targer picker
-            Picker(
+        }
+        Button(
+            onClick = {
+                onEvent(IntakeTargetEvents.OnValueChange(pickerState.selectedOption + Constants.MIN_INTAKE))
+            },
+            colors = ButtonDefaults.secondaryButtonColors(),
+            modifier = Modifier
+                .size(ButtonDefaults.DefaultButtonSize)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Check,
+                tint = MaterialTheme.colors.primary,
+                contentDescription = "Settings",
                 modifier = Modifier
-                    .height(97.dp),
-                state = pickerState,
-                contentDescription = "sel target value",
-            ) {
-                Text(
-                    text = (items[it]).toString(),
-                    style = TextStyle(
-                        fontSize = 44.sp,
-                        color = MyBlue,
-                        fontWeight = Bold
-                    )
-                )
-            }
-            // confirm btn
-            Button(
-                modifier = Modifier,
-                onClick = {
-                    onEvent(IntakeTargetEvents.OnValueChange(pickerState.selectedOption + Constants.MIN_INTAKE))
-                },
-                colors = ButtonDefaults.primaryButtonColors(
-                    backgroundColor = Color(0xFF2a2b2e),
-                )
-            ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = Icons.Rounded.ArrowForward,
-                    contentDescription = "triggers mod target action",
-                    tint = Color(0xFFf6f6f6)
-                )
-            }
+                    .padding(2.dp)
+            )
         }
     }
 }

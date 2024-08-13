@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material.icons.Icons
@@ -24,13 +25,16 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.material.*
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
+import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.romarickc.reminder.domain.model.WaterIntake
 import com.romarickc.reminder.presentation.theme.MyBlue
 import com.romarickc.reminder.presentation.theme.ReminderTheme
+import com.romarickc.reminder.presentation.utils.Page
 import com.romarickc.reminder.presentation.utils.Routes
 import com.romarickc.reminder.presentation.utils.UiEvent
 import kotlinx.coroutines.launch
@@ -82,7 +86,7 @@ fun getTimeTxt(timestamp: Long): String {
     return dateFormat.format(date)
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalHorologistApi::class)
 @Composable
 fun IntakeHistoryContent(
     intakes: List<WaterIntake>,
@@ -98,7 +102,6 @@ fun IntakeHistoryContent(
             startOfDayTimestamp
         ))
     }
-    val scalingLazyListState: ScalingLazyListState = rememberScalingLazyListState()
 
     val navController2 = rememberSwipeDismissableNavController()
 
@@ -107,32 +110,7 @@ fun IntakeHistoryContent(
         startDestination = Routes.IntakeHistory
     ) {
         composable(Routes.IntakeHistory) {
-            Scaffold(
-                timeText = { TimeText() },
-                vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
-                positionIndicator = { PositionIndicator(scalingLazyListState = scalingLazyListState) }
-            ) {
-                val coroutineScope = rememberCoroutineScope()
-                val focusRequester = remember { FocusRequester() }
-                LaunchedEffect(Unit){focusRequester.requestFocus()}
-
-                ScalingLazyColumn(
-                    modifier = Modifier
-                        .onRotaryScrollEvent {
-                            coroutineScope.launch {
-                                scalingLazyListState.scrollBy(it.verticalScrollPixels)
-                                scalingLazyListState.animateScrollBy(0f)
-                            }
-                            true
-                        }
-                        .focusRequester(focusRequester)
-                        .focusable()
-                        .fillMaxSize(),
-                    state = scalingLazyListState,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    // title
-
+            Page {
                     item {
                         ListHeader {
                             Text(text = "History")
@@ -147,13 +125,11 @@ fun IntakeHistoryContent(
                                     contentDescription = "triggers graph intakes",
                                 )
                             },
-                            colors = ChipDefaults.chipColors(
-                                backgroundColor = MyBlue
-                            ),
                             onClick = {
                                 navController2.navigate(Routes.SeeIntakeGraph)
                                 // onEvent(IntakeHistoryEvents.OnSeeIntakeGraphClick)
-                            }
+                            },
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
 
@@ -187,7 +163,6 @@ fun IntakeHistoryContent(
                         )
                     }*/
                     }
-                }
             }
         }
         composable(Routes.SeeIntakeGraph){

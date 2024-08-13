@@ -73,6 +73,7 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.9.1'
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
     implementation 'androidx.datastore:datastore-preferences:1.1.1'
+    implementation 'androidx.wear:wear-tooling-preview:1.0.0'
 
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
@@ -121,4 +122,9 @@ dependencies {
 
     implementation 'androidx.work:work-runtime:2.9.1'
     implementation 'com.google.accompanist:accompanist-permissions:0.34.0'
+
+    implementation "androidx.core:core-splashscreen:1.2.0-alpha01"
+    implementation("androidx.wear.tiles:tiles-tooling-preview:1.4.0")
+    debugImplementation("androidx.wear.tiles:tiles-tooling:1.4.0")
+    implementation("androidx.wear:wear-tooling-preview:1.0.0")
 }

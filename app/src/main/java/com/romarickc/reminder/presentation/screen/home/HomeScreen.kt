@@ -141,7 +141,7 @@ fun HomeContent(
         // header
         item {
             ListHeader {
-                Text(text = "History & Tips")
+                Text(text = "Tips")
             }
         }
 
@@ -153,14 +153,14 @@ fun HomeContent(
                 icon = {
                     when (index) {
                         0 -> Icon(
-                            imageVector = Icons.Rounded.History,
-                            contentDescription = "triggers water intake history action",
+                            imageVector = Icons.Rounded.SelfImprovement,
+                            contentDescription = "triggers hydration tips action",
                             modifier = Modifier
                         )
 
                         1 -> Icon(
-                            imageVector = Icons.Rounded.SelfImprovement,
-                            contentDescription = "triggers hydration tips action",
+                            imageVector = Icons.Rounded.History,
+                            contentDescription = "triggers water intake history action",
                             modifier = Modifier
                         )
                     }
